@@ -1,0 +1,11 @@
+# Binaires compilés
+/bin/
+/fizzbuzz-server
+*.exe
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
