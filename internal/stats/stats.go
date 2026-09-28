@@ -1,5 +1,7 @@
 package stats
 
+import "sync"
+
 //Request = combination of fizzbuzz params
 type Request struct {
 	Int1  int 
@@ -11,9 +13,10 @@ type Request struct {
 
 //store = nb of times each Request has been received
 type Store struct {
+	mu       sync.Mutex 
 	counts   map[Request]int
 	top      Request
-	nbHits  int
+	nbHits   int
 }
 
 func NewStore() *Store {
@@ -21,6 +24,10 @@ func NewStore() *Store {
 }
 
 func (s *Store) Record(r Request) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+
 	s.counts[r]++
 	if s.counts[r] > s.nbHits {
 		s.top = r
@@ -29,5 +36,8 @@ func (s *Store) Record(r Request) {
 }
 
 func (s *Store) MostFrequent() (req Request, hits int, ok bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	return s.top, s.nbHits, s.nbHits > 0
 }
