@@ -1,0 +1,8 @@
+.git/
+.gitignore
+*.md
+bin/
+*.test
+coverage.out
+.vscode/
+.idea/
