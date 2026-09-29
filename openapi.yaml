@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: FizzBuzz Server API
+  description: A generalized FizzBuzz REST API with request statistics.
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /fizzbuzz:
+    get:
+      summary: Generate a generalized FizzBuzz sequence
+      description: >
+        Returns the sequence from 1 to limit, replacing multiples of int1 by str1,
+        multiples of int2 by str2, and multiples of both by str1+str2.
+      parameters:
+        - name: int1
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 3
+          description: Must be a positive integer.
+        - name: int2
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 5
+          description: Must be a positive integer.
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            maximum: 10000
+            example: 15
+          description: Must be a positive integer, capped at 10000.
+        - name: str1
+          in: query
+          required: true
+          schema:
+            type: string
+            example: fizz
+        - name: str2
+          in: query
+          required: true
+          schema:
+            type: string
+            example: buzz
+      responses:
+        "200":
+          description: The generated sequence
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: ["1","2","fizz","4","buzz","fizz","7","8","fizz","buzz","11","fizz","13","14","fizzbuzz"]
+        "400":
+          description: Invalid or missing parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "int1 must be an integer"
+
+  /stats:
+    get:
+      summary: Get the most frequently requested combination of parameters
+      responses:
+        "200":
+          description: Most frequent request, or a message if none recorded yet
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      request:
+                        type: object
+                        properties:
+                          Int1: { type: integer }
+                          Int2: { type: integer }
+                          Limit: { type: integer }
+                          Str1: { type: string }
+                          Str2: { type: string }
+                      hits:
+                        type: integer
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+              example:
+                request: { Int1: 3, Int2: 5, Limit: 15, Str1: "fizz", Str2: "buzz" }
+                hits: 2
+
+  /health:
+    get:
+      summary: Liveness check
+      responses:
+        "200":
+          description: Server is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: ok
