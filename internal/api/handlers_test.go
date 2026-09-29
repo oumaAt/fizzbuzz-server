@@ -8,12 +8,14 @@ import (
 	"testing"
 
 	"github.com/oumaAt/fizzbuzz-server/internal/fizzbuzz"
+	"github.com/oumaAt/fizzbuzz-server/internal/stats"
 )
 
 func doRequest(method, target string) *httptest.ResponseRecorder {
+	store := stats.NewStore()
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(method, target, nil)
-	NewRouter().ServeHTTP(rec, req)
+	NewRouter(store).ServeHTTP(rec, req)
 	return rec
 }
 

@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/oumaAt/fizzbuzz-server/internal/fizzbuzz"
+	"github.com/oumaAt/fizzbuzz-server/internal/stats"
 )
 
 const MaxLimit = 10000
@@ -17,20 +18,29 @@ type params struct {
 	str1, str2        string
 }
 
-func FizzBuzzHandler(w http.ResponseWriter, r *http.Request) {
-	p, err := parseParams(r.URL.Query())
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
+func FizzBuzzHandler(store *stats.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		p, err := parseParams(r.URL.Query())
+		if err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 
-	result, err := fizzbuzz.Generate(p.int1, p.int2, p.limit, p.str1, p.str2)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
+		result, err := fizzbuzz.Generate(p.int1, p.int2, p.limit, p.str1, p.str2)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 
-	writeJSON(w, http.StatusOK, result)
+		store.Record(stats.Request{
+			Int1:  p.int1,
+			Int2:  p.int2,
+			Limit: p.limit,
+			Str1:  p.str1,
+			Str2:  p.str2,
+		})
+		writeJSON(w, http.StatusOK, result)
+	}
 }
 
 func parseParams(q url.Values) (params, error) {
@@ -42,7 +52,7 @@ func parseParams(q url.Values) (params, error) {
 	}
 
 	if p.int2, err = parseIntParam(q, "int2"); err != nil {
-		return params {}, err
+		return params{}, err
 	}
 
 	if p.limit, err = parseIntParam(q, "limit"); err != nil {
@@ -55,7 +65,7 @@ func parseParams(q url.Values) (params, error) {
 
 	p.str1, p.str2 = q.Get("str1"), q.Get("str2")
 	if p.str1 == "" || p.str2 == "" {
-		return params {}, fmt.Errorf("str1 and str2 are required")
+		return params{}, fmt.Errorf("str1 and str2 are required")
 	}
 
 	return p, nil

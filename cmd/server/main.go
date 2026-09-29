@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/oumaAt/fizzbuzz-server/internal/api"
+	"github.com/oumaAt/fizzbuzz-server/internal/stats"
 )
 
 func main() {
@@ -15,9 +16,11 @@ func main() {
 		port = "8080"
 	}
 
+	store := stats.NewStore()
+
 	srv := &http.Server{
 		Addr:              ":" + port,
-		Handler:           api.NewRouter(),
+		Handler:           api.NewRouter(store),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
